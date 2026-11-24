@@ -14,20 +14,49 @@
   Test : ajouter un jeu dont le titre est <b>Test</b>. Que voit-on ?
 */
 
+require 'connexion.php';
+
+if (isset($_GET['supprimer'])) {
+    $req = $pdo->prepare('DELETE FROM jeu WHERE id = :id');
+    $req->execute(array('id' => $_GET['supprimer']));
+}
+
+if (isset($_POST['titre'])) {
+    $req = $pdo->prepare('INSERT INTO jeu (titre, genre, annee, note) VALUES (:titre, :genre, :annee, :note)');
+    $req->execute(array(
+        'titre' => $_POST['titre'],
+        'genre' => $_POST['genre'],
+        'annee' => $_POST['annee'],
+        'note'  => $_POST['note']
+    ));
+}
+
+$resultat = $pdo->query('SELECT id, titre, genre, annee, note FROM jeu ORDER BY note DESC');
+$jeux = $resultat->fetchAll();
+
+$nbJeux = count($jeux);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <title>Ma ludothèque</title>
+    <title>Ma ludothèque (<?= $nbJeux ?> jeux)</title>
 </head>
 <body>
-    <h1>Ma ludothèque</h1>
+    <h1>Ma ludothèque (<?= $nbJeux ?> jeux)</h1>
 
     <table border="1">
         <tr><th>Titre</th><th>Genre</th><th>Année</th><th>Note</th><th></th></tr>
         <?php
-
+        foreach ($jeux as $jeu) {
+            echo '<tr>';
+            echo '<td>' . htmlspecialchars($jeu['titre']) . '</td>';
+            echo '<td>' . htmlspecialchars($jeu['genre']) . '</td>';
+            echo '<td>' . $jeu['annee'] . '</td>';
+            echo '<td>' . $jeu['note'] . '/20</td>';
+            echo '<td><a href="tp9_bonus_ludotheque.php?supprimer=' . $jeu['id'] . '">Supprimer</a></td>';
+            echo '</tr>';
+        }
         ?>
     </table>
 
@@ -41,3 +70,5 @@
     </form>
 </body>
 </html>
+
+
